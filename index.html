@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creativ AI - Ebook Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Markdown Parser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- HTML to PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar / Progress Tracker -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <i class="fa-solid fa-wand-magic-sparkles text-gradient"></i>
+                <h2>Creativ AI</h2>
+            </div>
+
+            <ul class="progress-tracker">
+                <li class="step active" id="nav-step-1">
+                    <div class="step-icon">1</div>
+                    <div class="step-text">Setup & Topik</div>
+                </li>
+                <li class="step" id="nav-step-2">
+                    <div class="step-icon">2</div>
+                    <div class="step-text">Pilih Ide</div>
+                </li>
+                <li class="step" id="nav-step-3">
+                    <div class="step-icon">3</div>
+                    <div class="step-text">Buat Outline</div>
+                </li>
+                <li class="step" id="nav-step-4">
+                    <div class="step-icon">4</div>
+                    <div class="step-text">Tulis Ebook</div>
+                </li>
+                <li class="step" id="nav-step-5">
+                    <div class="step-icon">5</div>
+                    <div class="step-text">Selesai</div>
+                </li>
+            </ul>
+
+            <div class="api-key-container">
+                <label for="apiKey">Gemini API Key</label>
+                <input type="password" id="apiKey" placeholder="Masukkan API Key...">
+                <p class="api-help">Dapatkan di <a href="https://aistudio.google.com/app/apikey" target="_blank">Google
+                        AI Studio</a></p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+
+            <!-- Step 1: Setup & Topik -->
+            <section class="wizard-panel active" id="panel-step-1">
+                <div class="panel-header">
+                    <h1>Mulai Ebook Baru</h1>
+                    <p>Tentukan topik dan gaya bahasa ebook yang ingin Anda buat.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="topicInput">Topik Utama / Niche</label>
+                    <input type="text" id="topicInput"
+                        placeholder="Contoh: Bisnis online untuk pemula, Diet sehat 30 hari...">
+                </div>
+
+                <div class="form-group">
+                    <label for="toneInput">Gaya Bahasa (Tone)</label>
+                    <select id="toneInput">
+                        <option value="Profesional">Profesional & Edukatif</option>
+                        <option value="Santai">Santai & Kekinian (Casual)</option>
+                        <option value="Storytelling">Storytelling (Bercerita)</option>
+                        <option value="Persuasif">Persuasif & Memotivasi</option>
+                        <option value="Akademik">Akademik & Formal</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary btn-generate" id="btnGenerateIdeas">
+                    <i class="fa-solid fa-lightbulb"></i> Generate Ide Ebook
+                </button>
+            </section>
+
+            <!-- Step 2: Pilih Ide -->
+            <section class="wizard-panel" id="panel-step-2">
+                <div class="panel-header">
+                    <h1>Pilih Ide Ebook</h1>
+                    <p>AI telah menghasilkan beberapa ide berdasarkan topik Anda. Pilih salah satu untuk dilanjutkan.
+                    </p>
+                </div>
+
+                <div class="ideas-container" id="ideasContainer">
+                    <!-- Ideas will be injected here -->
+                </div>
+
+                <div class="panel-footer">
+                    <button class="btn btn-secondary" onclick="goToStep(1)">Kembali</button>
+                    <button class="btn btn-primary" id="btnGenerateOutline" disabled>
+                        Lanjut Buat Outline <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Step 3: Buat Outline -->
+            <section class="wizard-panel" id="panel-step-3">
+                <div class="panel-header">
+                    <h1>Kerangka Ebook (Outline)</h1>
+                    <p>Berikut adalah kerangka dari ide yang Anda pilih. Anda dapat meninjau kerangka ini sebelum mulai
+                        menulis.</p>
+                </div>
+
+                <div class="outline-container markdown-body" id="outlineContainer">
+                    <!-- Outline markdown here -->
+                </div>
+
+                <div class="panel-footer">
+                    <button class="btn btn-secondary" onclick="goToStep(2)">Kembali</button>
+                    <button class="btn btn-primary" id="btnGenerateBook">
+                        <i class="fa-solid fa-pen-nib"></i> Mulai Tulis Ebook
+                    </button>
+                </div>
+            </section>
+
+            <!-- Step 4: Menulis Ebook -->
+            <section class="wizard-panel" id="panel-step-4">
+                <div class="panel-header">
+                    <h1>Menulis Ebook...</h1>
+                    <p>AI sedang menulis ebook brilian Anda bab demi bab. Proses ini memakan waktu beberapa menit.</p>
+                </div>
+
+                <div class="writing-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="writingProgressFill"></div>
+                    </div>
+                    <p class="progress-status" id="writingStatus">Menyiapkan AI...</p>
+                </div>
+
+                <div class="current-chapter-preview" id="chapterPreviewText">
+                    <!-- Typing effect preview -->
+                </div>
+            </section>
+
+            <!-- Step 5: Selesai & Export -->
+            <section class="wizard-panel" id="panel-step-5">
+                <div class="panel-header">
+                    <h1>Hore! Ebook Anda Selesai! 🎉</h1>
+                    <p>Ebook Anda telah berhasil dibuat. Silakan tinjau dan unduh hasilnya.</p>
+                </div>
+
+                <div class="ebook-result markdown-body" id="ebookResultContainer">
+                    <!-- Full book markdown -->
+                </div>
+
+                <div class="panel-footer align-right">
+                    <button class="btn btn-outline" id="btnCopyResult">
+                        <i class="fa-regular fa-copy"></i> Copy Text
+                    </button>
+                    <button class="btn btn-primary" id="btnDownloadResult">
+                        <i class="fa-solid fa-download"></i> TXT
+                    </button>
+                    <button class="btn btn-primary" id="btnDownloadPDF" style="background: var(--accent-primary);">
+                        <i class="fa-solid fa-file-pdf"></i> Download PDF
+                    </button>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p id="loadingText">Sedang berpikir...</p>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
