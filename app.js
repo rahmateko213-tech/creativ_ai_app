@@ -268,15 +268,55 @@ document.getElementById('btnGenerateBook').addEventListener('click', async () =>
     const progressStatus = document.getElementById('writingStatus');
     const previewText = document.getElementById('chapterPreviewText');
 
-    state.finalEbook = `# ${state.selectedIdea.title}\n\n`;
+    const coverPrompt = "A professional and aesthetic ebook cover for " + state.selectedIdea.title;
+    const coverUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(coverPrompt)}?width=800&height=1200&nologo=true`;
+    
+    state.finalEbook = `![Cover](${coverUrl})\n\n# ${state.selectedIdea.title}\n\n`;
     progressFill.style.width = '0%';
     previewText.innerHTML = '';
 
     const totalChapters = state.outline.length;
+    const totalSteps = totalChapters + 1; // +1 untuk Kata Pengantar
 
+    // 1. Generate Kata Pengantar
+    progressStatus.textContent = `Menulis Kata Pengantar... (1/${totalSteps})`;
+    previewText.innerHTML += `<div style="color:var(--accent-primary)">\n> Sedang menulis: Kata Pengantar...</div>\n`;
+
+    const prefacePrompt = `Anda adalah penulis ebook profesional. Buatkan "Kata Pengantar" yang menarik dan profesional untuk ebook berjudul "${state.selectedIdea.title}".
+Isi Kata Pengantar harus memberikan gambaran umum tentang buku ini, ucapan syukur, dan harapan untuk pembaca.
+Deskripsi Ebook: ${state.selectedIdea.description}
+Gaya bahasa: ${state.tone}
+PENTING: Jangan tuliskan judul "Kata Pengantar" di awal balasan Anda. Langsung mulai dari paragraf pertama.`;
+
+    const prefaceContent = await callGeminiAPI(prefacePrompt, false);
+    if (prefaceContent) {
+        state.finalEbook += `## Kata Pengantar\n\n${prefaceContent}\n\n`;
+        const trimmedPreface = prefaceContent.substring(0, 150) + '...';
+        previewText.innerHTML += `<div style="color:var(--text-secondary)">${trimmedPreface}</div><br>`;
+    }
+    
+    // Update progress
+    progressFill.style.width = `${Math.floor((1 / totalSteps) * 100)}%`;
+    previewText.scrollTop = previewText.scrollHeight;
+
+    // 2. Generate Daftar Isi
+    progressStatus.textContent = `Menyusun Daftar Isi...`;
+    previewText.innerHTML += `<div style="color:var(--accent-primary)">\n> Sedang menyusun: Daftar Isi...</div>\n`;
+    
+    state.finalEbook += `## Daftar Isi\n\n`;
+    state.finalEbook += `- Kata Pengantar\n`;
+    state.finalEbook += `- Daftar Isi\n`;
+    state.outline.forEach(chapter => {
+        state.finalEbook += `- ${chapter.chapter_title}\n`;
+    });
+    state.finalEbook += `\n\n`;
+    previewText.innerHTML += `<div style="color:var(--text-secondary)">Daftar Isi berhasil disusun...</div><br>`;
+    previewText.scrollTop = previewText.scrollHeight;
+
+    // 3. Loop over sections
     for (let i = 0; i < totalChapters; i++) {
         const chapter = state.outline[i];
-        progressStatus.textContent = `Menulis ${chapter.chapter_title}... (${i + 1}/${totalChapters})`;
+        progressStatus.textContent = `Menulis ${chapter.chapter_title}... (${i + 2}/${totalSteps})`;
 
         previewText.innerHTML += `<div style="color:var(--accent-primary)">\n> Sedang menulis: ${chapter.chapter_title}...</div>\n`;
 
@@ -300,7 +340,11 @@ Hasilkan tulisan isi bab ini secara lengkap dalam format Markdown murni.`;
         }
 
         // Add to final ebook
+        const chapterImagePrompt = "A conceptual, elegant illustration for a book chapter about: " + chapter.chapter_title + " in the context of " + state.selectedIdea.title;
+        const chapterImageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(chapterImagePrompt)}?width=800&height=400&nologo=true`;
+
         state.finalEbook += `\n\n# ${chapter.chapter_title}\n\n`;
+        state.finalEbook += `![${chapter.chapter_title}](${chapterImageUrl})\n\n`;
         state.finalEbook += chapterContent;
 
         // Show in preview
@@ -311,7 +355,7 @@ Hasilkan tulisan isi bab ini secara lengkap dalam format Markdown murni.`;
         previewText.scrollTop = previewText.scrollHeight;
 
         // Update progress
-        const percent = Math.floor(((i + 1) / totalChapters) * 100);
+        const percent = Math.floor(((i + 2) / totalSteps) * 100);
         progressFill.style.width = `${percent}%`;
     }
 
